@@ -1,3 +1,4 @@
+
 component extends="coldbox.system.EventHandler" {
 
     /**
@@ -198,12 +199,29 @@ component extends="coldbox.system.EventHandler" {
         var applicationScope = event.getValue("applicationReference");
     }
 
+    /**
+     * Handle requests for nonexistent ColdBox events.
+     * Return a generic 404 response without exposing framework details.
+     */
+    function onInvalidEvent(event, rc, prc) {
+        event.renderData(
+            type = "html",
+            data = "<h1>404 - Page Not Found</h1><p>The requested page could not be found.</p>",
+            statusCode = 404,
+            statusMessage = "Not Found"
+        );
+    }
+
+    /**
+     * Handle unexpected exceptions.
+     */
     function onException(event, rc, prc) {
         event.setHTTPHeader(statusCode = 500);
 
         var exception = prc.exception;
 
-        // Add custom exception handling here if needed.
+        // Add server-side logging here if required.
+        // Never return exception details or credentials to the client.
     }
 
 }
