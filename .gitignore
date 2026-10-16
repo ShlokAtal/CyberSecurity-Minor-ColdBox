@@ -1,0 +1,59 @@
+# General Ignores + IDE + Secrets
+.DS_Store
+.env
+effective-pom.xml
+
+# Deployed Engines
+.engine/**
+
+# logs + test results
+app/logs/**
+tests/results/**
+
+# npm
+**/node_modules/*
+npm-debug.log
+yarn-error.log
+
+## Global Libs
+lib/**
+!lib/java/
+!lib/java/.gitkeep
+!lib/modules/
+!lib/modules/.gitkeep
+
+
+# Local environment files
+.env.*
+!.env.example
+
+# Local backup files
+*.backup
+*.before-csp-fix
+
+# IDE and operating system files
+.vscode/
+.idea/
+Thumbs.db
+
+
+# Generated server and build artifacts
+/engine.war
+/.tmp/
+
+*.bak
+
+# Environment secrets
+.env
+.env.*
+
+# Allow the safe example configuration
+!.env.example
+
+# Local database files
+.db/
+docker/.db/
+
+# Logs and temporary files
+*.log
+.tmp/
