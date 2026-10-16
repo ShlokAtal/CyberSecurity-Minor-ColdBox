@@ -1,73 +1,82 @@
+
 ################################################################################
 # ColdBox Docker Compose Stack
-# This can be used to quickly run your ColdBox application in a CommandBox based Docker Container.
-#
-# We pull the latest image, you can change this to a specific tag or CFML engine, which we recommend.
-# https://hub.docker.com/repository/docker/ortussolutions/commandbox
-#
-# Database
-# - We give you three databases for you to choose from below: MySQL 8, PostgreSQL, Azure MSSQL
+# Runs the ColdBox application with MySQL 8 and CommandBox.
+# Configure passwords in your local .env file.
 ################################################################################
+
 services:
 
-  ## PostgreSQL
+  ## PostgreSQL (optional)
   # coldbox_db:
   #   image: postgres:12
   #   environment:
-  #     POSTGRES_PASSWORD: "coldbox"
-  #     POSTGRES_USER: "coldbox"
-  #     POSTGRES_DB: "coldbox"
+  #     POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+  #     POSTGRES_USER: ${DB_USER:-coldbox}
+  #     POSTGRES_DB: ${DB_DATABASE:-coldbox}
   #   ports:
-  #     - 5432:5432
+  #     - "5432:5432"
   #   volumes:
   #     - .db/postgres/initdb:/docker-entrypoint-initdb.d
   #     - .db/postgres/data:/var/lib/postgresql/data
 
+  ## Microsoft SQL Server (optional)
   # mssql:
   #   image: mcr.microsoft.com/azure-sql-edge:latest
   #   ports:
   #     - "1434:1433"
   #   environment:
-  #     SA_PASSWORD: "T35t1ng1234!"
+  #     SA_PASSWORD: ${SA_PASSWORD:?Set SA_PASSWORD in .env}
   #     ACCEPT_EULA: "Y"
   #   volumes:
   #     - .db/mssql/tmp:/tmp/mssql
 
-  # MySQL Server 8
+  ## MySQL Server 8
   coldbox_db:
     image: mysql:8
     ports:
       - "4306:3306"
     environment:
-      MYSQL_DATABASE: "coldbox"
-      MYSQL_ROOT_PASSWORD: "coldbox"
+      MYSQL_DATABASE: ${DB_DATABASE:-coldbox}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
     volumes:
-      # Store the data locally
+      # Store database data locally
       - .db/mysql8/data:/var/lib/mysql
-      # You can uncomment and it will seed the db with our prepared sql data
-      #- ../resources/sql/mysql:/docker-entrypoint-initdb.d
+      # Optional: seed the database with SQL files
+      # - ../resources/sql/mysql:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
-  # ColdBox Site
+  ## ColdBox Application
   coldbox_app:
+    
+    image: ortussolutions/commandbox:lucee7
     depends_on:
-      - coldbox_db
-    image: ortussolutions/commandbox:boxlang
-    # Environment Variables
+      coldbox_db:
+        condition: service_healthy
     environment:
-      CFCONFIG_ADMINPASSWORD: coldbox
+      LUCEE_ADMIN_PASSWORD: ${LUCEE_ADMIN_PASSWORD}
+      CFCONFIG_ADMINPASSWORD: ${CFCONFIG_ADMINPASSWORD:?Set CFCONFIG_ADMINPASSWORD in .env}
       ENVIRONMENT: DEVELOPMENT
-      # JWT_SECRET: mySecret
+  
+      # Set a strong JWT secret if your application uses JWT.
+      # JWT_SECRET: ${JWT_SECRET}
+
       DB_HOST: coldbox_db
-      DB_PORT: 4306
-      DB_DATABASE: coldbox
+      DB_PORT: "3306"
+      DB_DATABASE: ${DB_DATABASE:-coldbox}
       DB_DRIVER: MySQL
-      DB_USER: root
-      DB_PASSWORD: coldbox
-      DB_CONNECTIONSTRING: jdbc:mysql://127.0.0.1:3306/coldbox?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&useLegacyDatetimeCode=true
-    # Ports
+      DB_USER: ${DB_USER:-root}
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+      DB_CONNECTIONSTRING: jdbc:mysql://coldbox_db:3306/${DB_DATABASE:-coldbox}?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&allowPublicKeyRetrieval=true
+
     ports:
       - "8080:8080"
       - "8443:8443"
-    # Data & Overrides
+
     volumes:
       - ../:/app

@@ -31,7 +31,7 @@ component {
             sessionEndHandler: '',
             missingTemplateHandler: '',
             // Extension Points
-            applicationHelper: '/app/helpers/ApplicationHelper.cfm',
+            applicationHelper: 'helpers/ApplicationHelper.cfm',
             viewsHelper: '',
             modulesExternalLocation: ['/modules'],
             viewsExternalLocation: '',

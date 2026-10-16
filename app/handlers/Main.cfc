@@ -55,7 +55,7 @@ component extends="coldbox.system.EventHandler" {
         var result = queryExecute(
             "SELECT COUNT(*) AS total FROM users",
             [],
-            { datasource: "coldbox" }
+            { datasource: "coldbox_pentest_lab" }
         );
 
         event.renderData(
@@ -82,7 +82,7 @@ component extends="coldbox.system.EventHandler" {
                     cfsqltype: "cf_sql_varchar"
                 }
             },
-            { datasource: "coldbox" }
+            { datasource: "coldbox_pentest_lab" }
         );
 
         var users = [];
@@ -117,7 +117,7 @@ component extends="coldbox.system.EventHandler" {
         var result = queryExecute(
             sql,
             [],
-            { datasource: "coldbox" }
+            { datasource: "coldbox_pentest_lab" }
         );
 
         var users = [];
